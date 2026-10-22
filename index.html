@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le Trilemme de Willy</title>
+<meta name="description" content="Willy ne peut pas tout avoir. Choisis-en deux.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,700;9..144,900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0d12;
+    --bg-2: #17151d;
+    --card: #1c1a23;
+    --line: #2c2935;
+    --text: #f3efe6;
+    --muted: #8d8798;
+    --accent: #ffb347;
+    --off: #3a3644;
+    --danger: #ff5f57;
+    --c1: #7aa2ff;
+    --c2: #ffcf5c;
+    --c3: #6ee7a8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; }
+  body {
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #2a2140 0%, transparent 60%),
+      var(--bg);
+    color: var(--text);
+    font-family: "Fraunces", Georgia, serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 56px 16px 40px;
+    overflow-x: hidden;
+  }
+  .eyebrow {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 18px;
+  }
+  h1 {
+    font-weight: 900;
+    font-size: clamp(40px, 9vw, 88px);
+    line-height: .95;
+    text-align: center;
+    letter-spacing: -.02em;
+  }
+  h1 em { font-style: italic; font-weight: 400; color: var(--accent); }
+  .sub {
+    margin-top: 18px;
+    color: var(--muted);
+    font-size: clamp(16px, 2.4vw, 20px);
+    text-align: center;
+    max-width: 520px;
+  }
+
+  .board {
+    margin-top: 48px;
+    width: 100%;
+    max-width: 560px;
+    background: linear-gradient(180deg, var(--card), var(--bg-2));
+    border: 1px solid var(--line);
+    border-radius: 28px;
+    padding: 10px;
+    box-shadow: 0 40px 80px -30px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.04);
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 22px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    user-select: none;
+    transition: background .25s;
+  }
+  .row + .row { border-top: 1px solid var(--line); border-radius: 0 0 20px 20px; }
+  .row:hover { background: rgba(255,255,255,.025); }
+  .icon {
+    flex: none;
+    width: 52px; height: 52px;
+    border-radius: 16px;
+    display: grid; place-items: center;
+    font-size: 26px;
+    background: var(--off);
+    filter: grayscale(1);
+    opacity: .55;
+    transition: all .3s;
+  }
+  .row.on .icon { filter: none; opacity: 1; background: color-mix(in srgb, var(--c) 22%, transparent); }
+  .label { flex: 1; min-width: 0; }
+  .label strong {
+    display: block;
+    font-size: clamp(18px, 3.6vw, 24px);
+    font-weight: 700;
+    color: var(--muted);
+    transition: color .3s;
+  }
+  .row.on .label strong { color: var(--text); }
+  .label span {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--muted);
+    opacity: .7;
+  }
+
+  .switch {
+    flex: none;
+    position: relative;
+    width: 72px; height: 40px;
+    border-radius: 999px;
+    background: var(--off);
+    box-shadow: inset 0 2px 6px rgba(0,0,0,.5);
+    transition: background .3s, box-shadow .3s;
+  }
+  .switch::after {
+    content: "";
+    position: absolute;
+    top: 4px; left: 4px;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: #d9d4cc;
+    box-shadow: 0 3px 8px rgba(0,0,0,.45);
+    transition: transform .35s cubic-bezier(.5,1.6,.4,1), background .3s;
+  }
+  .row.on .switch {
+    background: var(--c);
+    box-shadow: inset 0 2px 6px rgba(0,0,0,.25), 0 0 24px color-mix(in srgb, var(--c) 55%, transparent);
+  }
+  .row.on .switch::after { transform: translateX(32px); background: #fff; }
+
+  .row.kicked { animation: kick .6s ease; }
+  .row.kicked .switch { background: var(--danger) !important; }
+  @keyframes kick {
+    0%,100% { transform: translateX(0); }
+    15% { transform: translateX(-10px) rotate(-1deg); }
+    30% { transform: translateX(9px) rotate(1deg); }
+    45% { transform: translateX(-6px); }
+    60% { transform: translateX(4px); }
+    75% { transform: translateX(-2px); }
+  }
+
+  .verdict {
+    margin-top: 32px;
+    width: 100%;
+    max-width: 560px;
+    min-height: 96px;
+    text-align: center;
+  }
+  .verdict .tag {
+    display: inline-block;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .verdict .tag.alert { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 50%, transparent); }
+  .verdict p {
+    font-size: clamp(18px, 3.4vw, 22px);
+    line-height: 1.4;
+    transition: opacity .25s;
+  }
+
+  .day {
+    margin-top: 36px;
+    width: 100%;
+    max-width: 560px;
+  }
+  .day-bar {
+    display: flex;
+    height: 14px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--off);
+  }
+  .day-bar div { transition: flex-grow .5s ease, background .3s; flex-basis: 0; }
+  .day-legend {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  footer {
+    margin-top: auto;
+    padding-top: 56px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--muted);
+    opacity: .6;
+    text-align: center;
+  }
+
+  @media (max-width: 420px) {
+    .row { padding: 18px 12px; gap: 12px; }
+    .icon { width: 44px; height: 44px; font-size: 22px; border-radius: 13px; }
+    .switch { width: 60px; height: 34px; }
+    .switch::after { width: 26px; height: 26px; }
+    .row.on .switch::after { transform: translateX(26px); }
+  }
+</style>
+</head>
+<body>
+  <div class="eyebrow">Le trilemme de Willy</div>
+  <h1>Choisis-en <em>deux.</em></h1>
+  <p class="sub">Willy veut tout. La journée fait 24 heures. Active les trois si tu l'oses.</p>
+
+  <div class="board" role="group" aria-label="Interrupteurs de Willy">
+    <div class="row" data-id="sleep" style="--c: var(--c1)" role="switch" aria-checked="false" tabindex="0">
+      <div class="icon">🌙</div>
+      <div class="label"><strong>Willy se couche à 22h</strong><span>comme un enfant sage</span></div>
+      <div class="switch"></div>
+    </div>
+    <div class="row" data-id="wake" style="--c: var(--c2)" role="switch" aria-checked="false" tabindex="0">
+      <div class="icon">☀️</div>
+      <div class="label"><strong>Willy se lève à 14h</strong><span>comme un artiste</span></div>
+      <div class="switch"></div>
+    </div>
+    <div class="row" data-id="work" style="--c: var(--c3)" role="switch" aria-checked="false" tabindex="0">
+      <div class="icon">💼</div>
+      <div class="label"><strong>Willy travaille 10h par jour</strong><span>comme un CEO sur LinkedIn</span></div>
+      <div class="switch"></div>
+    </div>
+  </div>
+
+  <div class="day" aria-hidden="true">
+    <div class="day-bar" id="bar">
+      <div id="b-sleep"></div><div id="b-work"></div><div id="b-free"></div>
+    </div>
+    <div class="day-legend"><span id="l-sleep">sommeil —</span><span id="l-work">travail —</span><span id="l-free">reste —</span></div>
+  </div>
+
+  <div class="verdict">
+    <div class="tag" id="tag">En attente</div>
+    <p id="msg">Willy n'a encore rien décidé. Comme d'habitude.</p>
+  </div>
+
+  <footer>24h par jour. Aucune exception. Même pour Willy.</footer>
+
+<script>
+  const IDS = ["sleep", "wake", "work"];
+  const rows = Object.fromEntries(IDS.map(id => [id, document.querySelector(`[data-id="${id}"]`)]));
+  let on = [];
+
+  const KICK_LINES = {
+    sleep: "Impossible. Le lit de 22h vient de sauter.",
+    wake: "Impossible. La grasse mat' jusqu'à 14h vient de sauter.",
+    work: "Impossible. Les 10h de boulot viennent de sauter."
+  };
+
+  const STATES = {
+    "": { tag: "En attente", text: "Willy n'a encore rien décidé. Comme d'habitude.", sleep: 0, work: 0 },
+    "sleep": { tag: "1 sur 3", text: "Couché à 22h. Pour l'instant, tout va bien.", sleep: 8, work: 0 },
+    "wake": { tag: "1 sur 3", text: "Réveil à 14h. Le café a un goût de déjeuner.", sleep: 8, work: 0 },
+    "work": { tag: "1 sur 3", text: "10h de travail. Willy a mis à jour son LinkedIn.", sleep: 8, work: 10 },
+    "sleep,wake": { tag: "16h de sommeil", text: "Couché 22h, levé 14h : 16 heures au lit. Il reste 8h, et Willy ne compte pas les passer au bureau.", sleep: 16, work: 0 },
+    "sleep,work": { tag: "Réveil 6h du mat'", text: "Couché 22h et 10h de boulot : réveil à l'aube, Willy est au bureau avant la boulangerie.", sleep: 8, work: 10 },
+    "wake,work": { tag: "Couché à 4h", text: "Levé 14h et 10h de boulot : Willy finit à minuit passé et se couche à 4h. Bon courage.", sleep: 10, work: 10 }
+  };
+
+  function render(kicked) {
+    IDS.forEach(id => {
+      const isOn = on.includes(id);
+      rows[id].classList.toggle("on", isOn);
+      rows[id].setAttribute("aria-checked", isOn);
+    });
+    const key = IDS.filter(id => on.includes(id)).join(",");
+    const s = STATES[key];
+    const tag = document.getElementById("tag");
+    const msg = document.getElementById("msg");
+    tag.textContent = kicked ? "Trilemme" : s.tag;
+    tag.classList.toggle("alert", !!kicked);
+    msg.textContent = kicked ? `${KICK_LINES[kicked]} ${s.text}` : s.text;
+
+    const free = 24 - s.sleep - s.work;
+    const active = on.length > 0;
+    setSeg("sleep", active ? s.sleep : 0, "var(--c1)");
+    setSeg("work", active ? s.work : 0, "var(--c3)");
+    setSeg("free", active ? free : 24, active ? "var(--c2)" : "var(--off)");
+    document.getElementById("l-sleep").textContent = `sommeil ${active ? s.sleep + "h" : "—"}`;
+    document.getElementById("l-work").textContent = `travail ${active ? s.work + "h" : "—"}`;
+    document.getElementById("l-free").textContent = `reste ${active ? free + "h" : "—"}`;
+  }
+
+  function setSeg(id, hours, color) {
+    const el = document.getElementById("b-" + id);
+    el.style.flexGrow = hours;
+    el.style.background = color;
+  }
+
+  function toggle(id) {
+    if (on.includes(id)) {
+      on = on.filter(x => x !== id);
+      render();
+      return;
+    }
+    let kicked = null;
+    if (on.length === 2) {
+      kicked = on[Math.floor(Math.random() * 2)];
+      on = on.filter(x => x !== kicked);
+      const row = rows[kicked];
+      row.classList.remove("kicked");
+      void row.offsetWidth;
+      row.classList.add("kicked");
+      if (navigator.vibrate) navigator.vibrate(120);
+    }
+    on.push(id);
+    render(kicked);
+  }
+
+  IDS.forEach(id => {
+    rows[id].addEventListener("click", () => toggle(id));
+    rows[id].addEventListener("keydown", e => {
+      if (e.key === " " || e.key === "Enter") { e.preventDefault(); toggle(id); }
+    });
+    rows[id].addEventListener("animationend", () => rows[id].classList.remove("kicked"));
+  });
+
+  render();
+</script>
+</body>
+</html>
